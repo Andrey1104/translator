@@ -4,7 +4,7 @@ import speech_recognition as sr
 from deep_translator import GoogleTranslator
 
 INPUT_LANG = "cs"
-OUTPUT_LANG = "uk"
+OUTPUT_LANG = "en"
 LANG = ["en", "de", "cs"]
 
 
@@ -28,7 +28,7 @@ def recognize_and_translate_speech(s_recognizer, my_microphone):
     with my_microphone as source:
         s_recognizer.adjust_for_ambient_noise(source)
         print("Start to speak:")
-        audio = s_recognizer.listen(source, phrase_time_limit=5)
+        audio = s_recognizer.listen(source, phrase_time_limit=None)
         
     audio_response = {
         "success": True,
@@ -63,7 +63,7 @@ def recognize_and_translate_speech(s_recognizer, my_microphone):
 @timer
 def speak(text):
     engine = pyttsx3.init()
-    engine.setProperty('rate', 150)
+    engine.setProperty('rate', 250)
     engine.setProperty('volume', 0.9)
 
     engine.say(text)
@@ -97,13 +97,14 @@ if __name__ == "__main__":
                 # print(f"\nEnglish : {response['translation_en']}")
                 # print(f"\nGerman : {response['translation_de']}")
                 # print(f"\nCzech : {response['translation_cs']}")
-                print(f"\nCzech : {response['translation']}")
+                print(f"\nEnglish : {response['translation']}")
                 print("----------------------------------------------------------------------")
-                # speak(response['translation_cs'])
+                # speak(response['translation'])
 
             if not response["success"]:
                 print("Error: {}".format(response["error"]))
             if response["error"]:
+                print(response["error"])
                 print("Repeat, please")
     except KeyboardInterrupt:
         print("Application is shutting down...")

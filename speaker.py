@@ -1,69 +1,44 @@
-import time
-import pyttsx3
 import speech_recognition as sr
-from deep_translator import GoogleTranslator
+
+from test import timer
 
 INPUT_LANG = "cs"
 OUTPUT_LANG = "uk"
 LANG = ["en", "de", "cs"]
 
 
-def timer(func):
-    def wrapper(*args, **kwargs):
-        start = time.time()
-        result = func(*args, **kwargs)
-        end = time.time()
-        print(func.__name__, end - start)
-        return result
-
-    return wrapper
-
-
 @timer
-def recognize_and_translate_speech(s_recognizer, my_microphone):
-    if not isinstance(s_recognizer, sr.Recognizer):
-        raise TypeError("`recognizer` must be `Recognizer` instance")
-    if not isinstance(my_microphone, sr.Microphone):
-        raise TypeError("`microphone` must be `Microphone` instance")
+def recognize_speech_from_mic():
+    recognizer = sr.Recognizer()
 
-    with my_microphone as source:
-        s_recognizer.adjust_for_ambient_noise(source)
-        print("Start to speak:")
-        audio = s_recognizer.listen(source, phrase_time_limit=5)
+    try:
+        with sr.Microphone() as source:
+            print("Say something!")
+            audio = recognizer.listen(source, phrase_time_limit=None)
 
-    audio_response = {
-        "success": True,
-        "error": None,
-        "transcription": None,
-        "translation": None
-    }
+            try:
+                text = recognizer.recognize_google(audio, language=INPUT_LANG)
+                print(f"You said: {text}.")
+
+                with open("speech.txt", "a+", encoding="utf-8") as file:
+                    file.write(text + "\n")
+
+            except sr.UnknownValueError:
+                print("Google Speech Recognition could not understand audio")
+            except sr.RequestError as e:
+                print("Could not request results from Google Speech Recognition service; {0}".format(e))
+
+    except Exception as err:
+        print(f"Could not access the microphone; {err}")
+
+    return None
 
 
 if __name__ == "__main__":
-    recognizer = sr.Recognizer()
-    microphone = get_microphone()
-
-    while microphone is None:
-        time.sleep(5)
-        microphone = get_microphone()
-
     try:
         while True:
-            response = recognize_and_translate_speech(recognizer, microphone)
-
-            if response["transcription"]:
-                print("----------------------------------------------------------------------")
-                print(f"Speaker: {response['transcription']}")
-                # print(f"\nEnglish : {response['translation_en']}")
-                # print(f"\nGerman : {response['translation_de']}")
-                # print(f"\nCzech : {response['translation_cs']}")
-                print(f"\nCzech : {response['translation']}")
-                print("----------------------------------------------------------------------")
-                # speak(response['translation_cs'])
-
-            if not response["success"]:
-                print("Error: {}".format(response["error"]))
-            if response["error"]:
-                print("Repeat, please")
+            recognize_speech_from_mic()
     except KeyboardInterrupt:
         print("Application is shutting down...")
+    except Exception as error:
+        print(f"Error: {error}")
